@@ -19,25 +19,35 @@
   <pre id="output"></pre>
 
   <script>
-    async function analyze() {
-      const text = document.getElementById('input').value;
-      const words = text.split(/\s+/).length;
-      const msgs = Math.ceil(words / 70);
-      const cost = (msgs * 0.03).toFixed(2);
-      document.getElementById('output').innerText =
-        `📨 عدد الرسائل: ${msgs}\n💵 الكلفة التقديرية: $${cost}`;
-    }
+  // تحليل عدد الرسائل والتكلفة (تبقى)
+  async function analyze() {
+    const text = document.getElementById("input").value;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const msgs = Math.max(1, Math.ceil(words / 70));
+    const cost = (msgs * 0.03).toFixed(2);
+    document.getElementById("output").innerText =
+      `📨 عدد الرسائل: ${msgs}\n💵 الكلفة التقديرية: $${cost}`;
+  }
 
-    async function compress() {
-      const text = document.getElementById('input').value;
-      const res = await fetch('/api/compress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+  // دالة الاختصار الجديدة التي تتصل بمسارك /api/compress
+  async function compress() {
+    const text = document.getElementById("input").value.trim();
+    if (!text) {
+      document.getElementById("output").innerText = "اكتب رسالة أولاً.";
+      return;
+    }
+    document.getElementById("output").innerText = "⏳ جاري الاختصار...";
+    try {
+      const res = await fetch("/api/compress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text })
       });
       const data = await res.json();
-      document.getElementById('output').innerText = data.content || 'حدث خطأ أثناء المعالجة';
+      if (!res.ok) throw new Error(data.error || "API error");
+      document.getElementById("output").innerText = data.content || "(لا يوجد ناتج)";
+    } catch (err) {
+      document.getElementById("output").innerText = "خطأ: " + (err.message || "تعذر المعالجة");
     }
-  </script>
-</body>
-</html>
+  }
+</script>
