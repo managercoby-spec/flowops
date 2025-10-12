@@ -1,6 +1,8 @@
 export default async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
   try {
-    // نحاول قراءة النص المرسل
+    // اقرأ البودي بأمان (قد يكون سترينغ)
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const text = body.text || '';
 
@@ -8,7 +10,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'text is required' });
     }
 
-    // طلب إلى OpenAI
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OPENAI_API_KEY is missing' });
+    }
+
+    // طلب OpenAI
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -21,17 +27,28 @@ export default async function handler(req, res) {
       })
     });
 
-    // نحاول قراءة الردّ كنص أولًا ثم نحوله JSON لتفادي أخطاء parsing
+    // لو الرد فشل، أرجع محتوى الخطأ كما هو
     const raw = await r.text();
-    if (!raw) return res.status(500).json({ error: 'empty response from OpenAI' });
+    if (!raw) {
+      return res.status(502).json({ error: 'empty response from OpenAI' });
+    }
 
-    let data = {};
-    try { data = JSON.parse(raw); } catch (err) {
-      return res.status(500).json({ error: 'invalid JSON from OpenAI', raw });
+    // جرّب تفك الـJSON
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
+      return res.status(502).json({ error: 'invalid JSON from OpenAI', raw });
+    }
+
+    // لو OpenAI ما رجّع OK، ارجع الرسالة كما هي
+    if (!r.ok) {
+      return res.status(r.status).json({ error: 'openai_error', details: data });
     }
 
     const content = data?.choices?.[0]?.message?.content || '';
     return res.status(200).json({ content });
+
   } catch (e) {
     return res.status(500).json({ error: e.message || 'server error' });
   }
