@@ -1,9 +1,43 @@
 <!DOCTYPE html>
-<html lang="ar">
-<meta charset="UTF-8" />
-<title>FlowOps Test</title>
-<body style="font:16px system-ui;padding:32px">
-  <h2>FlowOps OK ✅</h2>
-  <p>لو ظهرت هذه الصفحة بدل الكود، الإعداد صحيح.</p>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FlowOps — WhatsApp Message Optimizer</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; }
+    textarea { width: 100%; height: 150px; margin: 10px 0; }
+    button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: #6B46C1; color: white; cursor: pointer; }
+    button:hover { opacity: 0.9; }
+    pre { background: #f5f5f5; padding: 12px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>💬 FlowOps — WhatsApp Message Optimizer</h2>
+  <textarea id="input" placeholder="اكتب أو الصق رسالة واتساب هنا..."></textarea><br>
+  <button onclick="analyze()">تحليل الكلفة</button>
+  <button onclick="compress()">اختصار بالذكاء الاصطناعي</button>
+  <pre id="output"></pre>
+
+  <script>
+    async function analyze() {
+      const text = document.getElementById('input').value;
+      const words = text.split(/\s+/).length;
+      const msgs = Math.ceil(words / 70);
+      const cost = (msgs * 0.03).toFixed(2);
+      document.getElementById('output').innerText =
+        `📨 عدد الرسائل: ${msgs}\n💵 الكلفة التقديرية: $${cost}`;
+    }
+
+    async function compress() {
+      const text = document.getElementById('input').value;
+      const res = await fetch('/api/compress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      document.getElementById('output').innerText = data.content || 'حدث خطأ أثناء المعالجة';
+    }
+  </script>
 </body>
 </html>
