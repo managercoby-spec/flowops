@@ -23,7 +23,14 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: `اختصر هذه الرسالة 50% بدون فقدان المعنى:\n${text}` }]
+        messages: [{
+  role: 'user',
+  content: `Summarize or shorten this message by 50%, keeping the same tone and language of the original text. 
+If the text is in English, respond in English. 
+If it's in Arabic, respond in Arabic.
+Here is the text: ${text}`
+}]
+
       })
     });
 
