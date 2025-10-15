@@ -5,28 +5,37 @@
   <title>FlowOps — Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; }
-    textarea { width: 100%; min-height: 150px; margin: 10px 0; resize: vertical; }
-    button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: #6B46C1; color: white; cursor: pointer; }
-    button.secondary { background:#eee; color:inherit; }
+    /* Theme vars */
+    :root{
+      --bg:#ffffff; --text:#111827; --muted:#6b7280; --card:#ffffff; --border:#e5e7eb; --accent:#6B46C1; --shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    body.dark{
+      --bg:#0b0f16; --text:#e5e7eb; --muted:#9ca3af; --card:#0f1520; --border:#1f2937; --accent:#8b5cf6; --shadow:0 2px 12px rgba(0,0,0,.35);
+    }
+
+    body { background:var(--bg); color:var(--text); font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; transition: background .2s,color .2s; }
+    textarea { width: 100%; min-height: 150px; margin: 10px 0; resize: vertical; background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px; }
+    button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: var(--accent); color: white; cursor: pointer; }
+    button.secondary { background:var(--border); color:var(--text); }
     button[disabled] { opacity:.6; cursor:not-allowed; }
 
-    /* stats */
-    .stats{display:flex;gap:14px;align-items:center;margin:6px 0 12px 0;font-size:13px;opacity:.8}
-    .stats .dot{width:6px;height:6px;border-radius:999px;background:#6B46C1;display:inline-block;margin:0 6px}
-
     /* Navbar */
-    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
+    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); margin: -24px -16px 24px; }
     nav a { color: inherit; text-decoration: none; margin-left: 12px; }
+    .theme { background:transparent; color:var(--text); border:1px solid var(--border); padding:8px 12px; border-radius:8px; }
+
+    /* stats */
+    .stats{display:flex;gap:14px;align-items:center;margin:6px 0 12px 0;font-size:13px;color:var(--muted)}
+    .stats .dot{width:6px;height:6px;border-radius:999px;background:var(--accent);display:inline-block;margin:0 6px}
 
     /* Output card */
     #outputWrap{ display:none; margin-top:12px; }
     #output{
-      background:#fff; border:1px solid #eee; border-radius:12px; padding:14px; line-height:1.6;
-      box-shadow:0 2px 8px rgba(0,0,0,.04); white-space:pre-line;
+      background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; line-height:1.6;
+      box-shadow:var(--shadow); white-space:pre-line; color:var(--text);
     }
     .toolbar{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
-    .muted{ opacity:.65; font-size:12px; }
+    .muted{ color:var(--muted); font-size:12px; }
   </style>
 
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -39,10 +48,11 @@
       <img src="/logo.svg" alt="FlowOps" width="22" height="22" style="display:block">
       FlowOps
     </div>
-    <div>
+    <div style="display:flex;align-items:center;gap:10px">
       <a href="/index.html">Home</a>
       <a href="/pricing.html">Pricing</a>
-      <span style="opacity:.5; margin-left:12px;">Try Demo</span>
+      <span style="opacity:.5;">Try Demo</span>
+      <button class="theme" id="themeBtn" title="Toggle theme">🌙</button>
     </div>
   </nav>
 
@@ -68,7 +78,10 @@
     <div id="output"></div>
     <div class="toolbar">
       <span class="muted" id="status"></span>
-      <button class="secondary" id="copyBtn" onclick="copyOut()">Copy</button>
+      <div>
+        <button class="secondary" id="copyBtn" onclick="copyOut()">Copy</button>
+        <button class="secondary" id="dlBtn" onclick="downloadTxt()">Download .txt</button>
+      </div>
     </div>
   </div>
 
@@ -80,6 +93,19 @@
   const statusEl = document.getElementById('status');
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnCompress = document.getElementById('btnCompress');
+  const themeBtn = document.getElementById('themeBtn');
+
+  // --- theme ---
+  function applyTheme(t){ document.body.classList.toggle('dark', t==='dark'); themeBtn.textContent = t==='dark' ? '☀️' : '🌙'; localStorage.setItem('theme', t); }
+  (function initTheme(){
+    const saved = localStorage.getItem('theme');
+    const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved || (systemDark ? 'dark' : 'light'));
+  })();
+  themeBtn.addEventListener('click', () => {
+    const t = document.body.classList.contains('dark') ? 'light' : 'dark';
+    applyTheme(t);
+  });
 
   // --- helpers ---
   function show(text, status='') {
@@ -109,6 +135,16 @@
     }
   }
 
+  function downloadTxt(){
+    const txt = out.textContent || '';
+    const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'flowops-output.txt';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   // auto-resize textarea
   function autosize() {
     ta.style.height = 'auto';
@@ -130,13 +166,11 @@
 
     let msgs, cost;
     if (words === 0) {
-      msgs = 0;
-      cost = '0.00';
+      msgs = 0; cost = '0.00';
     } else {
       msgs = Math.max(1, Math.ceil(words / 70));
       cost = (msgs * 0.03).toFixed(2);
     }
-
     show(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
   }
 
@@ -168,13 +202,8 @@
     const chars = t.length;
 
     let msgs, cost;
-    if (words === 0) {
-      msgs = 0;
-      cost = '0.00';
-    } else {
-      msgs = Math.max(1, Math.ceil(words / 70));  // ≈70 كلمة/رسالة
-      cost = (msgs * 0.03).toFixed(2);            // 0.03$/رسالة (مثال)
-    }
+    if (words === 0) { msgs = 0; cost = '0.00'; }
+    else { msgs = Math.max(1, Math.ceil(words / 70)); cost = (msgs * 0.03).toFixed(2); }
 
     document.getElementById('sWords').textContent = words;
     document.getElementById('sChars').textContent = chars;
