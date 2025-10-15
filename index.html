@@ -13,7 +13,7 @@
 </head>
 <body>
   <h2>💬 FlowOps — WhatsApp Message Optimizer</h2>
-  <textarea id="input" placeholder="اكتب أو الصق رسالة واتساب هنا..."></textarea><br>
+  <textarea id="input" placeholder="Type or paste your WhatsApp message here..."></textarea><br>
   <button onclick="analyze()">Cost analysis</button>
   <button onclick="compress()">AI compression</button>
   <div id="output" style="background:#f5f5f5; padding:12px; border-radius:8px; white-space:pre-line; line-height:1.5;"></div>
@@ -27,7 +27,7 @@
     const msgs = Math.max(1, Math.ceil(words / 70));
     const cost = (msgs * 0.03).toFixed(2);
     document.getElementById("output").innerText =
-      `📨 عدد الرسائل: ${msgs}\n💵 الكلفة التقديرية: $${cost}`;
+      `📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`;
   }
 
   // دالة الاختصار الجديدة التي تتصل بمسارك /api/compress
