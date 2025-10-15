@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FlowOps — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{ --bg:#ffffff; --text:#111827; --muted:#6b7280; --card:#ffffff; --border:#e5e7eb; --accent:#6B46C1; --shadow:0 2px 8px rgba(0,0,0,.06); }
+    body { background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; max-width:960px; margin:40px auto; padding:0 16px; }
+    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); margin:-24px -16px 24px; }
+    nav a { color:inherit; text-decoration:none; margin-left:12px; }
+    .brand{display:flex;align-items:center;gap:8px;font-weight:700}
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow); }
+    .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+    .muted{ color:var(--muted) }
+    .btn{ display:inline-block; padding:10px 16px; border-radius:8px; border:0; text-decoration:none; background:var(--accent); color:#fff; }
+    .btn.secondary{ background:#eee; color:inherit; }
+    .progress{ height:10px; background:#f3f4f6; border-radius:999px; overflow:hidden; }
+    .bar{ height:100%; background:var(--accent); width:0%; transition:width .2s; }
+    .pill{ font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; }
+    .row{ display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+  </style>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#6B46C1">
+</head>
+<body>
+  <nav>
+    <div class="brand">
+      <img src="/logo.svg" alt="FlowOps" width="22" height="22">
+      FlowOps
+    </div>
+    <div>
+      <a href="/index.html">Home</a>
+      <a href="/pricing.html">Pricing</a>
+      <span style="opacity:.5;margin-left:12px;">Dashboard</span>
+    </div>
+  </nav>
+
+  <h1 style="margin:0 0 6px;">Dashboard</h1>
+  <p class="muted" style="margin:0 0 16px;">Track usage, plan, and quick actions.</p>
+
+  <!-- Signed-out card -->
+  <div id="signedOut" class="card" style="display:none;">
+    <h3 style="margin-top:0;">Sign in</h3>
+    <p class="muted">Mock sign-in (local only) — saves to your browser.</p>
+    <div class="row">
+      <div>
+        <button class="btn" onclick="fakeGoogle()">Continue with Google</button>
+        <button class="btn secondary" onclick="fakeEmail()">Continue with Email</button>
+      </div>
+      <a href="/demo.html" class="btn secondary">Try Demo</a>
+    </div>
+  </div>
+
+  <!-- Signed-in area -->
+  <div id="signedIn" style="display:none;">
+    <div class="row" style="margin-bottom:12px;">
+      <div class="pill" id="who">Signed in as …</div>
+      <div>
+        <button class="btn secondary" onclick="signOut()">Sign out</button>
+        <a class="btn" href="/demo.html" style="margin-left:8px;">Open Demo</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 4px;">Usage</h3>
+        <div class="muted">Messages this month</div>
+        <div style="font-size:28px;font-weight:800;margin:8px 0;"><span id="used">0</span>/<span id="limit">100</span></div>
+        <div class="progress"><div class="bar" id="bar"></div></div>
+        <div class="muted" style="margin-top:8px;">Plan: <b id="planName">Free</b></div>
+        <div style="margin-top:12px;">
+          <a class="btn" href="/pricing.html">Upgrade plan</a>
+          <button class="btn secondary" onclick="resetUsage()" style="margin-left:8px;">Reset usage (local)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 4px;">Quick links</h3>
+        <ul style="list-style:none;padding:0;margin:8px 0;display:grid;gap:8px;">
+          <li><a href="/demo.html">Compress a message</a></li>
+          <li><a href="/pricing.html">See pricing</a></li>
+          <li><a href="mailto:hello@yourdomain.com">Contact support</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const USAGE_KEY = 'flowops_usage';
+    const USER_KEY  = 'flowops_user';
+    const PLAN_KEY  = 'flowops_plan'; // 'free' | 'pro' | 'biz' (يدويًا الآن)
+
+    function getUsage(){ return Number(localStorage.getItem(USAGE_KEY) || 0); }
+    function setUsage(v){ localStorage.setItem(USAGE_KEY, String(v)); }
+    function getUser(){ try{ return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); }catch{return null} }
+    function setUser(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
+    function getPlan(){ return localStorage.getItem(PLAN_KEY) || 'free'; }
+    function setPlan(p){ localStorage.setItem(PLAN_KEY, p); }
+
+    function limitsFor(plan){
+      if (plan==='pro') return { name:'Pro', limit:3000 };
+      if (plan==='biz') return { name:'Business', limit:10000 };
+      return { name:'Free', limit:100 };
+    }
+
+    function render(){
+      const user = getUser();
+      const so = document.getElementById('signedOut');
+      const si = document.getElementById('signedIn');
+      if (!user){
+        so.style.display = 'block'; si.style.display = 'none';
+        return;
+      }
+      so.style.display = 'none'; si.style.display = 'block';
+
+      document.getElementById('who').textContent = `Signed in as ${user.email}`;
+      const plan = getPlan();
+      const {name, limit} = limitsFor(plan);
+      document.getElementById('planName').textContent = name;
+      document.getElementById('limit').textContent = limit;
+
+      const used = Math.min(getUsage(), limit);
+      document.getElementById('used').textContent = used;
+      document.getElementById('bar').style.width = Math.min(100, Math.round((used/limit)*100)) + '%';
+    }
+
+    // mock sign-in/out
+    function fakeGoogle(){
+      const email = prompt('Enter Google email (mock):', 'you@example.com');
+      if (!email) return;
+      setUser({email}); render();
+    }
+    function fakeEmail(){
+      const email = prompt('Enter your email:', 'you@example.com');
+      if (!email) return;
+      setUser({email}); render();
+    }
+    function signOut(){ localStorage.removeItem(USER_KEY); render(); }
+    function resetUsage(){ setUsage(0); render(); }
+
+    // init
+    if (!localStorage.getItem(PLAN_KEY)) setPlan('free');
+    render();
+  </script>
+</body>
+</html>
