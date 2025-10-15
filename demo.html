@@ -6,27 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; }
-    textarea { width: 100%; height: 150px; margin: 10px 0; }
+    textarea { width: 100%; min-height: 150px; margin: 10px 0; resize: vertical; }
     button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: #6B46C1; color: white; cursor: pointer; }
-    button:hover { opacity: 0.9; }
+    button.secondary { background:#eee; color:inherit; }
+    button[disabled] { opacity:.6; cursor:not-allowed; }
 
     /* Navbar */
     nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
     nav a { color: inherit; text-decoration: none; margin-left: 12px; }
 
-    /* Output card: مخفي افتراضيًا ويظهر عند وجود نص */
+    /* Output card */
+    #outputWrap{ display:none; margin-top:12px; }
     #output{
-      display:none;
-      background:#fff;
-      border:1px solid #eee;
-      border-radius:12px;
-      padding:14px;
-      line-height:1.6;
-      box-shadow:0 2px 8px rgba(0,0,0,.04);
-      margin-top:12px;
-      white-space:pre-line;
+      background:#fff; border:1px solid #eee; border-radius:12px; padding:14px; line-height:1.6;
+      box-shadow:0 2px 8px rgba(0,0,0,.04); white-space:pre-line;
     }
-    #output.show{ display:block; }
+    .toolbar{ display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+    .muted{ opacity:.65; font-size:12px; }
   </style>
 </head>
 <body>
@@ -42,48 +38,99 @@
 
   <h2>💬 FlowOps — WhatsApp Message Optimizer</h2>
   <textarea id="input" placeholder="Type or paste your WhatsApp message here..."></textarea><br>
-  <button onclick="analyze()">Cost analysis</button>
-  <button onclick="compress()">AI compression</button>
 
-  <!-- Output (كارد أنيق) -->
-  <div id="output"></div>
+  <div style="display:flex; gap:8px; margin-bottom:6px;">
+    <button id="btnAnalyze" class="secondary" onclick="analyze()">Cost analysis</button>
+    <button id="btnCompress" onclick="compress()">AI compression</button>
+  </div>
+  <div class="muted">Tip: Press <b>Ctrl/⌘ + Enter</b> to run AI compression, <b>Alt + A</b> for cost analysis.</div>
+
+  <!-- Output + toolbar -->
+  <div id="outputWrap">
+    <div id="output"></div>
+    <div class="toolbar">
+      <span class="muted" id="status"></span>
+      <button class="secondary" id="copyBtn" onclick="copyOut()">Copy</button>
+    </div>
+  </div>
 
   <script>
-  // Helper لإظهار/إخفاء صندوق المخرجات
-  function setOut(text){
-    const el = document.getElementById('output');
-    if (text && text.trim()){
-      el.textContent = text;
-      el.classList.add('show');
+  // --- helpers ---
+  const ta = document.getElementById('input');
+  const out = document.getElementById('output');
+  const wrap = document.getElementById('outputWrap');
+  const statusEl = document.getElementById('status');
+  const btnAnalyze = document.getElementById('btnAnalyze');
+  const btnCompress = document.getElementById('btnCompress');
+
+  function show(text, status='') {
+    if (text && text.trim()) {
+      out.textContent = text;
+      wrap.style.display = 'block';
     } else {
-      el.textContent = '';
-      el.classList.remove('show');
+      out.textContent = '';
+      wrap.style.display = 'none';
+    }
+    statusEl.textContent = status;
+  }
+
+  function setLoading(on) {
+    btnAnalyze.disabled = on;
+    btnCompress.disabled = on;
+  }
+
+  async function copyOut() {
+    try {
+      await navigator.clipboard.writeText(out.textContent || '');
+      statusEl.textContent = 'Copied';
+      setTimeout(()=> statusEl.textContent = '', 1200);
+    } catch {
+      statusEl.textContent = 'Copy failed';
+      setTimeout(()=> statusEl.textContent = '', 1200);
     }
   }
 
+  // auto-resize textarea
+  function autosize() {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(480, Math.max(150, ta.scrollHeight)) + 'px';
+  }
+  ta.addEventListener('input', autosize);
+  window.addEventListener('load', autosize);
+
+  // keyboard shortcuts
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); compress(); }
+    if (e.altKey && (e.key.toLowerCase() === 'a')) { e.preventDefault(); analyze(); }
+  });
+
+  // --- core actions ---
   async function analyze() {
-    const text = document.getElementById("input").value;
+    const text = ta.value;
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const msgs = Math.max(1, Math.ceil(words / 70));
     const cost = (msgs * 0.03).toFixed(2);
-    setOut(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
+    show(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
   }
 
   async function compress() {
-    const text = document.getElementById("input").value.trim();
-    if (!text) { setOut("Please write a message first."); return; }
-    setOut("⏳ Compressing with AI...");
+    const text = ta.value.trim();
+    if (!text) { show('Please write a message first.'); return; }
+    setLoading(true);
+    show('⏳ Compressing with AI...', 'Working…');
     try {
-      const res = await fetch("/api/compress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/compress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "API error");
-      setOut(data.content || "(No output)");
+      if (!res.ok) throw new Error(data.error || 'API error');
+      show(data.content || '(No output)');
     } catch (err) {
-      setOut("Error: " + (err.message || "Processing failed"));
+      show('Error: ' + (err.message || 'Processing failed'));
+    } finally {
+      setLoading(false);
     }
   }
   </script>
