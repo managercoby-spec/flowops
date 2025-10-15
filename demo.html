@@ -188,6 +188,7 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'API error');
       show(data.content || '(No output)');
+      bumpUsage(1);
     } catch (err) {
       show('Error: ' + (err.message || 'Processing failed'));
     } finally {
@@ -212,6 +213,14 @@
   }
   ta.addEventListener('input', updateStats);
   window.addEventListener('load', updateStats);
+    
+    // bump usage locally after a successful compression
+function bumpUsage(n=1){
+  const k='flowops_usage';
+  const v = Number(localStorage.getItem(k) || 0) + n;
+  localStorage.setItem(k, String(v));
+}
+
   </script>
 </body>
 </html>
