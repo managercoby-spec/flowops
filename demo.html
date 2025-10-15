@@ -10,9 +10,10 @@
     button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: #6B46C1; color: white; cursor: pointer; }
     button.secondary { background:#eee; color:inherit; }
     button[disabled] { opacity:.6; cursor:not-allowed; }
-    .stats{display:flex;gap:14px;align-items:center;margin:6px 0 12px 0;font-size:13px;opacity:.8}
-.stats .dot{width:6px;height:6px;border-radius:999px;background:#6B46C1;display:inline-block;margin:0 6px}
 
+    /* stats */
+    .stats{display:flex;gap:14px;align-items:center;margin:6px 0 12px 0;font-size:13px;opacity:.8}
+    .stats .dot{width:6px;height:6px;border-radius:999px;background:#6B46C1;display:inline-block;margin:0 6px}
 
     /* Navbar */
     nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
@@ -28,7 +29,6 @@
     .muted{ opacity:.65; font-size:12px; }
   </style>
 
-  <!-- favicon -->
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#6B46C1">
 </head>
@@ -48,13 +48,14 @@
 
   <h2>💬 FlowOps — WhatsApp Message Optimizer</h2>
   <textarea id="input" placeholder="Type or paste your WhatsApp message here..."></textarea><br>
-  <div class="stats">
-  <span><b id="sWords">0</b> words</span><span class="dot"></span>
-  <span><b id="sChars">0</b> chars</span><span class="dot"></span>
-  <span><b id="sMsgs">0</b> msgs</span><span class="dot"></span>
-  <span>~$<b id="sCost">0.00</b></span>
-</div>
 
+  <!-- live stats -->
+  <div class="stats">
+    <span><b id="sWords">0</b> words</span><span class="dot"></span>
+    <span><b id="sChars">0</b> chars</span><span class="dot"></span>
+    <span><b id="sMsgs">0</b> msgs</span><span class="dot"></span>
+    <span>~$<b id="sCost">0.00</b></span>
+  </div>
 
   <div style="display:flex; gap:8px; margin-bottom:6px;">
     <button id="btnAnalyze" class="secondary" onclick="analyze()">Cost analysis</button>
@@ -72,7 +73,7 @@
   </div>
 
   <script>
-  // --- helpers ---
+  // --- refs ---
   const ta = document.getElementById('input');
   const out = document.getElementById('output');
   const wrap = document.getElementById('outputWrap');
@@ -80,6 +81,7 @@
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnCompress = document.getElementById('btnCompress');
 
+  // --- helpers ---
   function show(text, status='') {
     if (text && text.trim()) {
       out.textContent = text;
@@ -123,21 +125,20 @@
 
   // --- core actions ---
   async function analyze() {
-  const text = ta.value;
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const text = ta.value;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
 
-  let msgs, cost;
-  if (words === 0) {
-    msgs = 0;
-    cost = '0.00';
-  } else {
-    msgs = Math.max(1, Math.ceil(words / 70));
-    cost = (msgs * 0.03).toFixed(2);
+    let msgs, cost;
+    if (words === 0) {
+      msgs = 0;
+      cost = '0.00';
+    } else {
+      msgs = Math.max(1, Math.ceil(words / 70));
+      cost = (msgs * 0.03).toFixed(2);
+    }
+
+    show(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
   }
-
-  show(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
-}
-
 
   async function compress() {
     const text = ta.value.trim();
@@ -158,29 +159,30 @@
     } finally {
       setLoading(false);
     }
-function updateStats(){
-  const t = ta.value;
-  const words = t.trim() ? t.trim().split(/\s+/).length : 0;
-  const chars = t.length;
-
-  let msgs, cost;
-  if (words === 0) {
-    msgs = 0;
-    cost = '0.00';
-  } else {
-    msgs = Math.max(1, Math.ceil(words / 70));  // ≈70 كلمة/رسالة
-    cost = (msgs * 0.03).toFixed(2);            // 0.03$ لكل رسالة (مثال)
   }
 
-  document.getElementById('sWords').textContent = words;
-  document.getElementById('sChars').textContent = chars;
-  document.getElementById('sMsgs').textContent  = msgs;
-  document.getElementById('sCost').textContent  = cost;
-}
+  // --- live stats ---
+  function updateStats(){
+    const t = ta.value;
+    const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+    const chars = t.length;
 
-ta.addEventListener('input', updateStats);
-window.addEventListener('load', updateStats);
+    let msgs, cost;
+    if (words === 0) {
+      msgs = 0;
+      cost = '0.00';
+    } else {
+      msgs = Math.max(1, Math.ceil(words / 70));  // ≈70 كلمة/رسالة
+      cost = (msgs * 0.03).toFixed(2);            // 0.03$/رسالة (مثال)
+    }
 
+    document.getElementById('sWords').textContent = words;
+    document.getElementById('sChars').textContent = chars;
+    document.getElementById('sMsgs').textContent  = msgs;
+    document.getElementById('sCost').textContent  = cost;
+  }
+  ta.addEventListener('input', updateStats);
+  window.addEventListener('load', updateStats);
   </script>
 </body>
 </html>
