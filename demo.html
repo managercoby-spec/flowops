@@ -10,6 +10,9 @@
     button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: #6B46C1; color: white; cursor: pointer; }
     button.secondary { background:#eee; color:inherit; }
     button[disabled] { opacity:.6; cursor:not-allowed; }
+    .stats{display:flex;gap:14px;align-items:center;margin:6px 0 12px 0;font-size:13px;opacity:.8}
+.stats .dot{width:6px;height:6px;border-radius:999px;background:#6B46C1;display:inline-block;margin:0 6px}
+
 
     /* Navbar */
     nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
@@ -45,6 +48,13 @@
 
   <h2>💬 FlowOps — WhatsApp Message Optimizer</h2>
   <textarea id="input" placeholder="Type or paste your WhatsApp message here..."></textarea><br>
+  <div class="stats">
+  <span><b id="sWords">0</b> words</span><span class="dot"></span>
+  <span><b id="sChars">0</b> chars</span><span class="dot"></span>
+  <span><b id="sMsgs">1</b> msgs</span><span class="dot"></span>
+  <span>~$<b id="sCost">0.03</b></span>
+</div>
+
 
   <div style="display:flex; gap:8px; margin-bottom:6px;">
     <button id="btnAnalyze" class="secondary" onclick="analyze()">Cost analysis</button>
@@ -140,6 +150,21 @@
       setLoading(false);
     }
   }
+    function updateStats(){
+  const t = ta.value;
+  const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+  const chars = t.length;
+  const msgs  = Math.max(1, Math.ceil(words / 70));   // تقريبًا 70 كلمة/رسالة
+  const cost  = (msgs * 0.03).toFixed(2);             // 0.03$ لكل رسالة (مثال)
+
+  document.getElementById('sWords').textContent = words;
+  document.getElementById('sChars').textContent = chars;
+  document.getElementById('sMsgs').textContent  = msgs;
+  document.getElementById('sCost').textContent  = cost;
+}
+ta.addEventListener('input', updateStats);
+window.addEventListener('load', updateStats);
+
   </script>
 </body>
 </html>
