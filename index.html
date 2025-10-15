@@ -34,10 +34,10 @@
   async function compress() {
     const text = document.getElementById("input").value.trim();
     if (!text) {
-      document.getElementById("output").innerText = "اكتب رسالة أولاً.";
+      document.getElementById("output").innerText = "Please write a message first.";
       return;
     }
-    document.getElementById("output").innerText = "⏳ جاري الاختصار...";
+    document.getElementById("output").innerText = "⏳ Compressing with AI...";
     try {
       const res = await fetch("/api/compress", {
         method: "POST",
@@ -46,9 +46,9 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "API error");
-      document.getElementById("output").innerText = data.content || "(لا يوجد ناتج)";
+      document.getElementById("output").innerText = data.content || "(No output)";
     } catch (err) {
-      document.getElementById("output").innerText = "خطأ: " + (err.message || "تعذر المعالجة");
+      document.getElementById("output").innerText = "Error: " + (err.message || "Processing failed");
     }
   }
 </script>
