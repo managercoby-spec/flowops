@@ -6,32 +6,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: system-ui, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 16px; }
-    button { padding: 10px 16px; border-radius: 8px; border: 0; cursor: pointer; }
-    .primary { background: #6B46C1; color: #fff; }
-    .secondary { background: #eee; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 40px; }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; }
+    /* Navbar */
     nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
-    a { color: inherit; text-decoration: none; }
+    nav a { color: inherit; text-decoration: none; margin-left: 12px; }
+    /* Buttons as links */
+    .btn { display:inline-block; padding:10px 16px; border-radius:8px; border:0; text-decoration:none; }
+    .btn.primary { background:#6B46C1; color:#fff; }
+    .btn.secondary { background:#eee; color:inherit; }
+    /* Features */
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px; margin-top:40px; }
+    .card { border:1px solid #eee; border-radius:12px; padding:16px; }
   </style>
 </head>
 <body>
   <nav>
     <div style="font-weight:700">FlowOps</div>
-    <div style="display:flex;gap:12px;">
+    <div>
       <a href="/index.html">Home</a>
       <a href="/pricing.html">Pricing</a>
       <a href="/demo.html">Try Demo</a>
     </div>
   </nav>
 
-  <h1 style="font-size:36px; font-weight:800; margin-bottom:8px;">Make WhatsApp messages shorter, clearer, cheaper.</h1>
+  <h1 style="font-size:36px; font-weight:800; margin-bottom:8px;">
+    Make WhatsApp messages shorter, clearer, cheaper.
+  </h1>
   <p style="opacity:.85; margin-bottom:20px;">
     FlowOps compresses long messages by ~50% with AI while preserving tone and meaning.
   </p>
+
   <div style="display:flex; gap:12px;">
-    <a href="/demo.html" class="primary" style="display:inline-block;text-decoration:none;">Try Demo</a>
-    <a href="/pricing.html" class="secondary" style="display:inline-block;text-decoration:none;">See Pricing</a>
+    <a href="/demo.html" class="btn primary">Try Demo</a>
+    <a href="/pricing.html" class="btn secondary">See Pricing</a>
   </div>
 
   <div class="grid">
