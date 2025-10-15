@@ -5,59 +5,130 @@
   <title>FlowOps — Pricing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 16px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .card { border: 2px solid #eee; border-radius: 12px; padding: 20px; }
-    .card.highlight { border-color: #6B46C1; }
-    button { padding: 10px 16px; border-radius: 8px; background: #6B46C1; color: #fff; border: 0; cursor: pointer; }
-    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
-    a { color: inherit; text-decoration: none; }
+    :root{
+      --bg:#ffffff; --text:#111827; --muted:#6b7280; --card:#ffffff; --border:#e5e7eb; --accent:#6B46C1; --shadow:0 2px 8px rgba(0,0,0,.06);
+    }
+    body { background:var(--bg); color:var(--text); font-family: system-ui, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 16px; }
+    /* Navbar */
+    nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); margin: -24px -16px 24px; }
+    nav a { color: inherit; text-decoration: none; margin-left: 12px; }
+    .brand{display:flex;align-items:center;gap:8px;font-weight:700}
+    .brand img{display:block}
+
+    /* Pills */
+    .toggle { display:inline-flex; background:#f3f4f6; border-radius:999px; padding:4px; gap:4px; }
+    .toggle button{ padding:8px 12px; border-radius:999px; border:0; background:transparent; cursor:pointer; }
+    .toggle button.active{ background:#fff; box-shadow:var(--shadow); }
+
+    /* Grid */
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:16px; margin-top:24px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow); display:flex; flex-direction:column; }
+    .card h3{ margin:0 0 8px 0; }
+    .price{ font-size:28px; font-weight:800; margin:6px 0 2px; }
+    .per{ color:var(--muted); font-size:12px; }
+    ul{ list-style:none; padding:0; margin:12px 0; display:grid; gap:8px; }
+    li::before{ content:"✓"; margin-right:8px; color:var(--accent); }
+    .btn{ display:inline-block; padding:10px 16px; border-radius:8px; border:0; text-decoration:none; background:var(--accent); color:#fff; text-align:center; }
+    .btn.secondary{ background:#eee; color:inherit; }
+    .badge{ font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:var(--muted); }
+
+    .popular{ border:2px solid var(--accent); }
+    .popular .badge{ border-color:var(--accent); color:var(--accent); }
   </style>
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#6B46C1">
 </head>
 <body>
   <nav>
-    <div style="font-weight:700">FlowOps</div>
-    <div style="display:flex;gap:12px;">
-      <a href="index.html">Home</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="demo.html">Try Demo</a>
+    <div class="brand">
+      <img src="/logo.svg" alt="FlowOps" width="22" height="22">
+      FlowOps
+    </div>
+    <div>
+      <a href="/index.html">Home</a>
+      <span style="opacity:.5;margin-left:12px;">Pricing</span>
+      <a href="/demo.html" style="margin-left:12px;">Try Demo</a>
     </div>
   </nav>
 
-  <h2 style="font-size:28px; font-weight:800; margin-bottom:16px;">Simple pricing</h2>
-  <div class="grid">
+  <header style="max-width:780px;margin:0 auto 10px;">
+    <h1 style="font-size:34px; font-weight:800; margin:0 0 6px;">Simple pricing for WhatsApp optimization</h1>
+    <p style="opacity:.85;margin:0 0 14px;">Start free, upgrade when you need more messages and features.</p>
+
+    <!-- Toggle Monthly/Yearly -->
+    <div class="toggle" role="tablist" aria-label="Billing period">
+      <button id="mBtn" class="active" onclick="setPlan('m')" role="tab" aria-selected="true">Monthly</button>
+      <button id="yBtn" onclick="setPlan('y')" role="tab" aria-selected="false">Yearly <span class="badge" style="margin-left:6px;">save 20%</span></button>
+    </div>
+  </header>
+
+  <section class="grid" id="plans">
+    <!-- Free -->
     <div class="card">
-      <div style="font-weight:800; font-size:20px;">Starter</div>
-      <div style="font-size:32px; margin:8px 0;">$9<span style="font-size:14px;">/mo</span></div>
+      <div class="badge">Free</div>
+      <h3>Starter</h3>
+      <div class="price" data-m="$0" data-y="$0">$0</div>
+      <div class="per">No credit card • ideal for testing</div>
       <ul>
-        <li>1,000 messages/mo</li>
+        <li>100 messages / month</li>
+        <li>AI compression (~50%)</li>
+        <li>Cost analyzer</li>
+        <li>Arabic ↔ English</li>
+      </ul>
+      <a class="btn secondary" href="/demo.html">Try free demo</a>
+    </div>
+
+    <!-- Pro -->
+    <div class="card popular">
+      <div class="badge">Most popular</div>
+      <h3>Pro</h3>
+      <div class="price" data-m="$9" data-y="$7">$9</div>
+      <div class="per" id="per-pro">per month</div>
+      <ul>
+        <li>3,000 messages / month</li>
+        <li>Priority AI (faster)</li>
+        <li>Custom tone presets</li>
         <li>Email support</li>
-        <li>AI compression</li>
       </ul>
-      <button style="margin-top:12px;">Get started</button>
+      <!-- غيّر البريد لعنوانك -->
+      <a class="btn" href="mailto:hello@yourdomain.com?subject=FlowOps%20Pro%20Signup&body=Hi%20FlowOps%2C%20I%20want%20to%20upgrade%20to%20Pro.">Get started</a>
     </div>
 
-    <div class="card highlight">
-      <div style="font-weight:800; font-size:20px;">Pro</div>
-      <div style="font-size:32px; margin:8px 0;">$29<span style="font-size:14px;">/mo</span></div>
-      <ul>
-        <li>5,000 messages/mo</li>
-        <li>Priority support</li>
-        <li>Team access</li>
-      </ul>
-      <button style="margin-top:12px;">Get started</button>
-    </div>
-
+    <!-- Team -->
     <div class="card">
-      <div style="font-weight:800; font-size:20px;">Business</div>
-      <div style="font-size:32px; margin:8px 0;">$99<span style="font-size:14px;">/mo</span></div>
+      <div class="badge">Teams</div>
+      <h3>Business</h3>
+      <div class="price" data-m="$29" data-y="$23">$29</div>
+      <div class="per" id="per-biz">per month</div>
       <ul>
-        <li>25,000 messages/mo</li>
-        <li>SLA support</li>
-        <li>SSO (soon)</li>
+        <li>10,000 messages / month</li>
+        <li>Members & roles</li>
+        <li>Usage analytics</li>
+        <li>Priority support</li>
       </ul>
-      <button style="margin-top:12px;">Get started</button>
+      <!-- مثال واتساب: بدّل الرقم لرقمك -->
+      <a class="btn" href="https://wa.me/15551234567?text=Hi%20FlowOps%2C%20I%27m%20interested%20in%20Business%20plan.">Talk to sales</a>
     </div>
-  </div>
+  </section>
+
+  <p style="text-align:center;color:#6b7280;margin-top:16px;">Prices in USD. VAT may apply.</p>
+
+  <script>
+    // billing toggle
+    function setPlan(mode){
+      const m = mode === 'm';
+      document.getElementById('mBtn').classList.toggle('active', m);
+      document.getElementById('yBtn').classList.toggle('active', !m);
+
+      document.querySelectorAll('.price').forEach(el=>{
+        el.textContent = el.getAttribute(m ? 'data-m' : 'data-y');
+      });
+      document.getElementById('per-pro').textContent = m ? 'per month' : 'per month (billed yearly)';
+      document.getElementById('per-biz').textContent = m ? 'per month' : 'per month (billed yearly)';
+    }
+    // default monthly
+    setPlan('m');
+  </script>
 </body>
 </html>
