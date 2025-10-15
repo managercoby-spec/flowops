@@ -9,45 +9,70 @@
     textarea { width: 100%; height: 150px; margin: 10px 0; }
     button { margin-right: 10px; padding: 10px 20px; border: 0; border-radius: 8px; background: #6B46C1; color: white; cursor: pointer; }
     button:hover { opacity: 0.9; }
-    /* هذان السطران لإزالة لون/تسطير الروابط */
+
+    /* Navbar */
     nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid #eee; margin: -24px -16px 24px; }
     nav a { color: inherit; text-decoration: none; margin-left: 12px; }
+
+    /* Output card: مخفي افتراضيًا ويظهر عند وجود نص */
+    #output{
+      display:none;
+      background:#fff;
+      border:1px solid #eee;
+      border-radius:12px;
+      padding:14px;
+      line-height:1.6;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+      margin-top:12px;
+      white-space:pre-line;
+    }
+    #output.show{ display:block; }
   </style>
 </head>
 <body>
-  <!-- ضع الـNavbar في الأعلى -->
-<nav>
-  <div style="font-weight:700">FlowOps</div>
-  <div>
-    <a href="/index.html">Home</a>
-    <a href="/pricing.html">Pricing</a>
-    <span style="opacity:.5; margin-left:12px;">Try Demo</span>
-  </div>
-</nav>
+  <!-- Navbar -->
+  <nav>
+    <div style="font-weight:700">FlowOps</div>
+    <div>
+      <a href="/index.html">Home</a>
+      <a href="/pricing.html">Pricing</a>
+      <span style="opacity:.5; margin-left:12px;">Try Demo</span>
+    </div>
+  </nav>
 
   <h2>💬 FlowOps — WhatsApp Message Optimizer</h2>
   <textarea id="input" placeholder="Type or paste your WhatsApp message here..."></textarea><br>
   <button onclick="analyze()">Cost analysis</button>
   <button onclick="compress()">AI compression</button>
-  <div id="output" style="background:#f5f5f5; padding:12px; border-radius:8px; white-space:pre-line; line-height:1.5;"></div>
+
+  <!-- Output (كارد أنيق) -->
+  <div id="output"></div>
 
   <script>
+  // Helper لإظهار/إخفاء صندوق المخرجات
+  function setOut(text){
+    const el = document.getElementById('output');
+    if (text && text.trim()){
+      el.textContent = text;
+      el.classList.add('show');
+    } else {
+      el.textContent = '';
+      el.classList.remove('show');
+    }
+  }
+
   async function analyze() {
     const text = document.getElementById("input").value;
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
     const msgs = Math.max(1, Math.ceil(words / 70));
     const cost = (msgs * 0.03).toFixed(2);
-    document.getElementById("output").innerText =
-      `📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`;
+    setOut(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
   }
 
   async function compress() {
     const text = document.getElementById("input").value.trim();
-    if (!text) {
-      document.getElementById("output").innerText = "Please write a message first.";
-      return;
-    }
-    document.getElementById("output").innerText = "⏳ Compressing with AI...";
+    if (!text) { setOut("Please write a message first."); return; }
+    setOut("⏳ Compressing with AI...");
     try {
       const res = await fetch("/api/compress", {
         method: "POST",
@@ -56,9 +81,9 @@
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "API error");
-      document.getElementById("output").innerText = data.content || "(No output)";
+      setOut(data.content || "(No output)");
     } catch (err) {
-      document.getElementById("output").innerText = "Error: " + (err.message || "Processing failed");
+      setOut("Error: " + (err.message || "Processing failed"));
     }
   }
   </script>
