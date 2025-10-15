@@ -51,8 +51,8 @@
   <div class="stats">
   <span><b id="sWords">0</b> words</span><span class="dot"></span>
   <span><b id="sChars">0</b> chars</span><span class="dot"></span>
-  <span><b id="sMsgs">1</b> msgs</span><span class="dot"></span>
-  <span>~$<b id="sCost">0.03</b></span>
+  <span><b id="sMsgs">0</b> msgs</span><span class="dot"></span>
+  <span>~$<b id="sCost">0.00</b></span>
 </div>
 
 
@@ -123,12 +123,21 @@
 
   // --- core actions ---
   async function analyze() {
-    const text = ta.value;
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    const msgs = Math.max(1, Math.ceil(words / 70));
-    const cost = (msgs * 0.03).toFixed(2);
-    show(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
+  const text = ta.value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+  let msgs, cost;
+  if (words === 0) {
+    msgs = 0;
+    cost = '0.00';
+  } else {
+    msgs = Math.max(1, Math.ceil(words / 70));
+    cost = (msgs * 0.03).toFixed(2);
   }
+
+  show(`📨 Number of messages: ${msgs}\n💵 Estimated cost: $${cost}`);
+}
+
 
   async function compress() {
     const text = ta.value.trim();
@@ -149,19 +158,26 @@
     } finally {
       setLoading(false);
     }
-  }
-    function updateStats(){
+function updateStats(){
   const t = ta.value;
   const words = t.trim() ? t.trim().split(/\s+/).length : 0;
   const chars = t.length;
-  const msgs  = Math.max(1, Math.ceil(words / 70));   // تقريبًا 70 كلمة/رسالة
-  const cost  = (msgs * 0.03).toFixed(2);             // 0.03$ لكل رسالة (مثال)
+
+  let msgs, cost;
+  if (words === 0) {
+    msgs = 0;
+    cost = '0.00';
+  } else {
+    msgs = Math.max(1, Math.ceil(words / 70));  // ≈70 كلمة/رسالة
+    cost = (msgs * 0.03).toFixed(2);            // 0.03$ لكل رسالة (مثال)
+  }
 
   document.getElementById('sWords').textContent = words;
   document.getElementById('sChars').textContent = chars;
   document.getElementById('sMsgs').textContent  = msgs;
   document.getElementById('sCost').textContent  = cost;
 }
+
 ta.addEventListener('input', updateStats);
 window.addEventListener('load', updateStats);
 
